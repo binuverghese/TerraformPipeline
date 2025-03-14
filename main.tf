@@ -5,6 +5,12 @@ terraform {
       version = ">=3.0.0"
     }
   }
+   backend "azurerm" {
+    resource_group_name  = “tfstate-bvdemo-rg”
+    storage_account_name = "tfstatebvdemo"
+    container_name       = "tfstate"
+    key                  = "tfdemo.tfstate"
+  }
 }
 
 provider "azurerm" {
