@@ -1,76 +1,57 @@
-variable "location" {
-  description = "Azure region for deployment"
-  type        = string
-  default     = "East US"
-}
-
 variable "resource_group_name" {
-  description = "Name of the Azure Resource Group"
+  description = "The name of the resource group"
   type        = string
-  default     = "rg-isolated-online"
 }
 
-variable "vnet_name" {
-  description = "Virtual Network Name"
+variable "location" {
+  description = "The Azure region where resources will be created"
   type        = string
-  default     = "vnet-isolated"
 }
 
-variable "address_space" {
-  description = "Address space for the VNet"
+variable "address_space_vnet1" {
+  description = "Address space for vnet1"
   type        = list(string)
-  default     = ["10.0.0.0/16"]
+  default     = ["192.168.0.0/16"]
 }
 
-variable "subnets" {
-  description = "Subnets configuration"
-  type = map(object({
-    address_prefixes = list(string)
-  }))
-  default = {
-    subnet-app  = { address_prefixes = ["10.0.1.0/24"] }
-    subnet-fw   = { address_prefixes = ["10.0.2.0/24"] }
-  }
+variable "address_space_vnet2" {
+  description = "Address space for vnet2"
+  type        = list(string)
+  default     = ["10.0.0.0/27"]
 }
 
-variable "firewall_name" {
-  description = "Azure Firewall Name"
+variable "dns_servers" {
+  description = "List of DNS servers"
+  type        = list(string)
+  default     = ["8.8.8.8"]
+}
+
+variable "enable_ddos_protection" {
+  description = "Enable DDoS protection"
+  type        = bool
+  default     = false
+}
+
+variable "enable_vm_protection" {
+  description = "Enable VM protection"
+  type        = bool
+  default     = true
+}
+
+variable "encryption_enabled" {
+  description = "Enable encryption for virtual network"
+  type        = bool
+  default     = true
+}
+
+variable "encryption_enforcement" {
+  description = "Encryption enforcement mode"
   type        = string
-  default     = "fw-isolated"
+  default     = "AllowUnencrypted"
 }
 
-variable "bastion_name" {
-  description = "Azure Bastion Name"
-  type        = string
-  default     = "bastion-isolated"
-}
-
-variable "application_gateway_name" {
-  description = "Application Gateway Name"
-  type        = string
-  default     = "agw-isolated"
-}
-
-variable "nsg_name" {
-  description = "Network Security Group Name"
-  type        = string
-  default     = "nsg-isolated"
-}
-
-variable "dns_zone_name" {
-  description = "Private DNS Zone Name"
-  type        = string
-  default     = "isolated.private"
-}
-
-variable "log_analytics_workspace_id" {
-  description = "Log Analytics Workspace ID for Monitoring"
-  type        = string
-  default     = ""
-}
-
-variable "remote_vnet_id" {
-  description = "Remote VNet ID for Peering"
-  type        = string
-  default     = ""
+variable "flow_timeout" {
+  description = "Flow timeout in minutes"
+  type        = number
+  default     = 30
 }
