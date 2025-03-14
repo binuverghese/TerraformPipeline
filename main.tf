@@ -37,7 +37,11 @@ resource "random_integer" "region_index" {
 module "naming" {
   source  = "Azure/naming/azurerm"
   version = "~> 0.3"
-}
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  address_space       = var.address_space_vnet1
+  subnets             = var.subnets 
+ }
 
 resource "azurerm_resource_group" "this" {
   location = var.location
@@ -107,60 +111,60 @@ resource "azurerm_log_analytics_workspace" "this" {
 
 module "vnet1" {
   source              = "../../"
-  resource_group_name = var.resource_group_name
-  location            = var.location
-  name                = module.naming.virtual_network.name_unique
-  address_space       = var.address_space_vnet1
+  #resource_group_name = var.resource_group_name
+  #location            = var.location
+  #name                = module.naming.virtual_network.name_unique
+  #address_space       = var.address_space_vnet1
 
-  dns_servers = {
-    dns_servers = var.dns_servers
-  }
+  #dns_servers = {
+   # dns_servers = var.dns_servers
+  #}
 
-  ddos_protection_plan = {
-    id     = azurerm_network_ddos_protection_plan.this.id
-    enable = var.enable_ddos_protection
-  }
+ # ddos_protection_plan = {
+   # id     = azurerm_network_ddos_protection_plan.this.id
+   # enable = var.enable_ddos_protection
+  #}
 
-  enable_vm_protection = var.enable_vm_protection
+  #enable_vm_protection = var.enable_vm_protection
 
-  encryption = {
-    enabled     = var.encryption_enabled
-    enforcement = var.encryption_enforcement
-  }
+  #encryption = {
+   # enabled     = var.encryption_enabled
+   # enforcement = var.encryption_enforcement
+ # }
 
-  flow_timeout_in_minutes = var.flow_timeout
+  #flow_timeout_in_minutes = var.flow_timeout
 }
 
 module "vnet2" {
   source              = "../../"
-  resource_group_name = var.resource_group_name
-  location            = var.location
-  name                = "${module.naming.virtual_network.name_unique}2"
-  address_space       = var.address_space_vnet2
+  # resource_group_name = var.resource_group_name
+  # location            = var.location
+  # name                = "${module.naming.virtual_network.name_unique}2"
+  # address_space       = var.address_space_vnet2
 
-  encryption = {
-    enabled     = var.encryption_enabled
-    enforcement = var.encryption_enforcement
-  }
+  # encryption = {
+  #   enabled     = var.encryption_enabled
+  #   enforcement = var.encryption_enforcement
+  # }
 
-  peerings = {
-    peertovnet1 = {
-      name                                  = "${module.naming.virtual_network_peering.name_unique}-vnet2-to-vnet1"
-      remote_virtual_network_resource_id    = module.vnet1.resource_id
-      allow_forwarded_traffic               = true
-      allow_gateway_transit                 = true
-      allow_virtual_network_access          = true
-      do_not_verify_remote_gateways         = false
-      enable_only_ipv6_peering              = false
-      use_remote_gateways                   = false
-      create_reverse_peering                = true
-      reverse_name                          = "${module.naming.virtual_network_peering.name_unique}-vnet1-to-vnet2"
-      reverse_allow_forwarded_traffic       = false
-      reverse_allow_gateway_transit         = false
-      reverse_allow_virtual_network_access  = true
-      reverse_do_not_verify_remote_gateways = false
-      reverse_enable_only_ipv6_peering      = false
-      reverse_use_remote_gateways           = false
-    }
-  }
+  # peerings = {
+  #   peertovnet1 = {
+  #     name                                  = "${module.naming.virtual_network_peering.name_unique}-vnet2-to-vnet1"
+  #     remote_virtual_network_resource_id    = module.vnet1.resource_id
+  #     allow_forwarded_traffic               = true
+  #     allow_gateway_transit                 = true
+  #     allow_virtual_network_access          = true
+  #     do_not_verify_remote_gateways         = false
+  #     enable_only_ipv6_peering              = false
+  #     use_remote_gateways                   = false
+  #     create_reverse_peering                = true
+  #     reverse_name                          = "${module.naming.virtual_network_peering.name_unique}-vnet1-to-vnet2"
+  #     reverse_allow_forwarded_traffic       = false
+  #     reverse_allow_gateway_transit         = false
+  #     reverse_allow_virtual_network_access  = true
+  #     reverse_do_not_verify_remote_gateways = false
+  #     reverse_enable_only_ipv6_peering      = false
+  #     reverse_use_remote_gateways           = false
+  #   }
+  # }
 }
