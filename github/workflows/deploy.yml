@@ -1,4 +1,4 @@
-name: Terraform deploy Log Analytics
+name: Terraform Isolated Online Landing Zone
 on:
   workflow_dispatch:
 jobs:
