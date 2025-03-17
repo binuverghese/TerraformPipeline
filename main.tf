@@ -26,7 +26,7 @@ provider "azurerm" {
 
 module "regions" {
   source  = "Azure/regions/azurerm"
-  version = "~> 1.6"
+  version = "> 0.3"
 }
 
 resource "random_integer" "region_index" {
