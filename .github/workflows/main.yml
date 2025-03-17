@@ -9,7 +9,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_wrapper: false
-          terraform_version: '1.6.0'  # Ensure version 1.6.x is used
+          terraform_version: '>= 1.5.5, < 2.0'  # Ensure version 1.6.x is used
 
       - name: Terraform Init
         run: terraform init
