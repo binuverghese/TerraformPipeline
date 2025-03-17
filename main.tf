@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.5, < 2.0"
+  required_version = ">= 1.9, < 2.0"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -37,10 +37,10 @@ resource "random_integer" "region_index" {
 module "naming" {
   source  = "Azure/naming/azurerm"
   version = "~> 0.3"
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  address_space       = var.address_space_vnet1
-  subnets             = var.subnets 
+  # location            = var.location
+  # resource_group_name = var.resource_group_name
+  # address_space       = var.address_space_vnet1
+  # subnets             = var.subnets 
  }
 
 resource "azurerm_resource_group" "this" {
