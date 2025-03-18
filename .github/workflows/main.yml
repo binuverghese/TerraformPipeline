@@ -24,28 +24,28 @@ jobs:
 
       - name: Terraform Init
         env:
-          ARM_CLIENT_ID: 'ace61daa-7e98-4d1c-8dc6-c3d2d1537891'
-          ARM_CLIENT_SECRET: 'Sep8Q~iOExmed_AjdhrKU5Ghg_-434MAG.50Hbkn'
-          ARM_SUBSCRIPTION_ID: '1e437fdf-bd78-431d-ba95-1498f0e84c10'
-          ARM_TENANT_ID: '35db3582-96af-4081-a32c-7bbaa2cf3ca9'
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTON_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
          
         run: terraform init
 
 
       - name: Terraform Plan
         env:
-          ARM_CLIENT_ID: 'ace61daa-7e98-4d1c-8dc6-c3d2d1537891'
-          ARM_CLIENT_SECRET: 'Sep8Q~iOExmed_AjdhrKU5Ghg_-434MAG.50Hbkn'
-          ARM_SUBSCRIPTION_ID: '1e437fdf-bd78-431d-ba95-1498f0e84c10'
-          ARM_TENANT_ID: '35db3582-96af-4081-a32c-7bbaa2cf3ca9'
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTON_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         
         run: terraform plan -input=false -var="location=Canada Central" -var="resource_group_name=TESTRG_GA" -var="name=TESTVNET-GA" -out=tfplan
 
       - name: Terraform Apply
         if: github.event_name == 'push'
         env:
-          ARM_CLIENT_ID: 'ace61daa-7e98-4d1c-8dc6-c3d2d1537891'
-          ARM_CLIENT_SECRET: 'Sep8Q~iOExmed_AjdhrKU5Ghg_-434MAG.50Hbkn'
-          ARM_SUBSCRIPTION_ID: '1e437fdf-bd78-431d-ba95-1498f0e84c10'
-          ARM_TENANT_ID: '35db3582-96af-4081-a32c-7bbaa2cf3ca9'
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTON_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: terraform apply -auto-approve tfplan
