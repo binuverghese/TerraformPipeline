@@ -17,155 +17,91 @@ terraform {
 }
 
 provider "azurerm" {
-  features {
-    resource_group {
-      prevent_deletion_if_contains_resources = false
-    }
-  }
-  subscription_id = "1e437fdf-bd78-431d-ba95-1498f0e84c10"
+  features {}
 }
 
-module "regions" {
-  source  = "Azure/regions/azurerm"
-  version = "~> 0.3"
-}
-
-resource "random_integer" "region_index" {
-  max = length(module.regions.regions) - 1
-  min = 0
-}
-
-module "naming" {
-  source  = "Azure/naming/azurerm"
-  version = "~> 0.3"
-  # location            = var.location
-  # resource_group_name = var.resource_group_name
-  # address_space       = var.address_space_vnet1
-  # subnets             = var.subnets 
- }
-
+# Resource Group
 resource "azurerm_resource_group" "this" {
   location = var.location
   name     = var.resource_group_name
 }
 
+# Route Table (UDR) - Parameterized
 resource "azurerm_route_table" "this" {
   location            = var.location
-  name                = module.naming.route_table.name_unique
+  name                = var.route_table_name
   resource_group_name = var.resource_group_name
+
+  dynamic "route" {
+    for_each = var.routes
+    content {
+      name                   = route.value.name
+      address_prefix         = route.value.address_prefix
+      next_hop_type          = "VirtualAppliance"
+      next_hop_in_ip_address = route.value.next_hop_ip
+    }
+  }
 }
 
-resource "azurerm_network_ddos_protection_plan" "this" {
+# Network Security Group (NSG)
+resource "azurerm_network_security_group" "nsg" {
   location            = var.location
-  name                = module.naming.network_ddos_protection_plan.name_unique
-  resource_group_name = var.resource_group_name
-}
-
-resource "azurerm_nat_gateway" "this" {
-  location            = var.location
-  name                = module.naming.nat_gateway.name_unique
-  resource_group_name = var.resource_group_name
-}
-
-data "http" "public_ip" {
-  method = "GET"
-  url    = "http://api.ipify.org?format=json"
-}
-
-resource "azurerm_network_security_group" "https" {
-  location            = var.location
-  name                = module.naming.network_security_group.name_unique
+  name                = var.nsg_name
   resource_group_name = var.resource_group_name
 
   security_rule {
-    access                     = "Allow"
+    access                     = "Deny"
     destination_address_prefix = "*"
-    destination_port_range     = "443"
+    destination_port_range     = "*"
     direction                  = "Inbound"
-    name                       = "AllowInboundHTTPS"
+    name                       = "DenyInboundHTTPS"
     priority                   = 100
     protocol                   = "Tcp"
-    source_address_prefix      = jsondecode(data.http.public_ip.response_body).ip
+    source_address_prefix      = "*" # Allow traffic from any source
     source_port_range          = "*"
   }
 }
 
-resource "azurerm_user_assigned_identity" "this" {
-  location            = var.location
-  name                = module.naming.user_assigned_identity.name_unique
-  resource_group_name = var.resource_group_name
-}
-
-resource "azurerm_storage_account" "this" {
-  account_replication_type = "ZRS"
-  account_tier             = "Standard"
-  location                 = var.location
-  name                     = module.naming.storage_account.name_unique
-  resource_group_name      = var.resource_group_name
-}
-
-resource "azurerm_log_analytics_workspace" "this" {
-  location            = var.location
-  name                = module.naming.log_analytics_workspace.name_unique
-  resource_group_name = var.resource_group_name
-}
-
+# Virtual Network
 module "vnet1" {
-  source              = "../../"
-  #resource_group_name = var.resource_group_name
-  #location            = var.location
-  #name                = module.naming.virtual_network.name_unique
-  #address_space       = var.address_space_vnet1
+  source              = "Azure/avm-res-network-virtualnetwork/azurerm"
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  name                = var.vnet_name
+  address_space       = var.address_space_vnet1
 
-  #dns_servers = {
-   # dns_servers = var.dns_servers
-  #}
+  dns_servers = {
+    dns_servers = toset(var.dns_servers)
+  }
 
- # ddos_protection_plan = {
-   # id     = azurerm_network_ddos_protection_plan.this.id
-   # enable = var.enable_ddos_protection
-  #}
-
-  #enable_vm_protection = var.enable_vm_protection
-
-  #encryption = {
-   # enabled     = var.encryption_enabled
-   # enforcement = var.encryption_enforcement
- # }
-
-  #flow_timeout_in_minutes = var.flow_timeout
+  enable_vm_protection = var.enable_vm_protection
 }
 
-module "vnet2" {
-  source              = "../../"
-  # resource_group_name = var.resource_group_name
-  # location            = var.location
-  # name                = "${module.naming.virtual_network.name_unique}2"
-  # address_space       = var.address_space_vnet2
+# Subnet
+module "subnet1" {
+  source = "Azure/avm-res-network-virtualnetwork/azurerm//modules/subnet"
 
-  # encryption = {
-  #   enabled     = var.encryption_enabled
-  #   enforcement = var.encryption_enforcement
-  # }
+  virtual_network = {
+    resource_id = module.vnet1.resource_id
+  }
 
-  # peerings = {
-  #   peertovnet1 = {
-  #     name                                  = "${module.naming.virtual_network_peering.name_unique}-vnet2-to-vnet1"
-  #     remote_virtual_network_resource_id    = module.vnet1.resource_id
-  #     allow_forwarded_traffic               = true
-  #     allow_gateway_transit                 = true
-  #     allow_virtual_network_access          = true
-  #     do_not_verify_remote_gateways         = false
-  #     enable_only_ipv6_peering              = false
-  #     use_remote_gateways                   = false
-  #     create_reverse_peering                = true
-  #     reverse_name                          = "${module.naming.virtual_network_peering.name_unique}-vnet1-to-vnet2"
-  #     reverse_allow_forwarded_traffic       = false
-  #     reverse_allow_gateway_transit         = false
-  #     reverse_allow_virtual_network_access  = true
-  #     reverse_do_not_verify_remote_gateways = false
-  #     reverse_enable_only_ipv6_peering      = false
-  #     reverse_use_remote_gateways           = false
-  #   }
-  # }
+  address_prefixes = var.subnet_address_prefixes
+  name             = var.subnet_name
+}
+
+# Ensure the Subnet module outputs `resource_id`
+output "subnet_id" {
+  value = module.subnet1.resource_id
+}
+
+# Associate Route Table (UDR) with Subnet
+resource "azurerm_subnet_route_table_association" "subnet_rt" {
+  subnet_id      = module.subnet1.resource_id
+  route_table_id = azurerm_route_table.this.id
+}
+
+# Associate NSG with Subnet
+resource "azurerm_subnet_network_security_group_association" "subnet_nsg" {
+  subnet_id                 = module.subnet1.resource_id
+  network_security_group_id = azurerm_network_security_group.nsg.id
 }
