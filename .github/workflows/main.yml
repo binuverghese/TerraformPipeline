@@ -41,7 +41,7 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTON_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         
-        run: terraform plan -input=false -var="location=Canada Central" -var="resource_group_name=TESTRG_GA" -var="name=TESTVNET-GA" -out=tfplan
+        run: terraform plan -out=tfplan
 
       - name: Terraform Apply
         if: github.event_name == 'push'
