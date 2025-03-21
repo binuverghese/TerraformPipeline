@@ -55,7 +55,7 @@ resource "azurerm_network_security_group" "nsg" {
     destination_port_range     = "*"
     direction                  = "Inbound"
     name                       = "DenyInboundHTTPS"
-    priority                   = 100
+    priority                   = 4096
     protocol                   = "Tcp"
     source_address_prefix      = "*" # Allow traffic from any source
     source_port_range          = "*"
